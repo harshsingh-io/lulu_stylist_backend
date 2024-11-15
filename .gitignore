@@ -1,0 +1,63 @@
+# Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+.env/
+.envrc
+
+# Packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Logs
+*.log
+
+# Databases
+*.sqlite
+
+# Environment Configuration Files
+.env
+.flaskenv
+
+# IDE/Editor Settings
+.vscode/
+.idea/
+*.swp
+*.sublime-workspace
+*.sublime-project
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+
+# Python-specific exclusions
+*.py[co]
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+coverage.xml
+.python-version  # Used by pyenv to specify python version
+
+# Celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Docker
+docker-compose.override.yml
+*.log
+*.tar
+*.gz
+
+# Node modules if you are using JavaScript tools
+node_modules/
+
+# Ignore secrets directory
+secrets/
