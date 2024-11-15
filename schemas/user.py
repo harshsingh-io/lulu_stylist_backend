@@ -22,6 +22,8 @@ class UserInDBBase(UserBase):
     id: UUID
     created_at: datetime
     updated_at: datetime
+    is_active: bool
+    is_superuser: bool
 
     class Config:
         from_attributes = True
