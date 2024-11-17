@@ -1,0 +1,5 @@
+{
+  "email": "harshtobekind@gmail.com",
+  "username": "HelloWorld",
+  "password": "helloworld"
+}
