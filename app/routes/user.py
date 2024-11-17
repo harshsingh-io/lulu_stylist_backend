@@ -3,13 +3,14 @@ from sqlalchemy.orm import Session
 from typing import List
 from datetime import timedelta
 from ..database.session import get_db
-from ..schemas.user import UserCreate, UserResponse, UserUpdate, Token
+from ..schemas.schemas import (
+    UserCreate, User, UserUpdate, Token
+)
 from ..crud.user import (
     create_user,
     get_user_by_email,
     get_users,
-    update_user,
-    delete_user
+    update_user_profile
 )
 from ..auth.jwt_handler import (
     verify_password,
@@ -17,10 +18,11 @@ from ..auth.jwt_handler import (
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
 from ..auth.jwt_bearer import JWTBearer
+from ..models.models import User as UserModel
 
 router = APIRouter()
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register", response_model=User)
 def register(user: UserCreate, db: Session = Depends(get_db)):
     db_user = get_user_by_email(db, email=user.email)
     if db_user:
@@ -50,25 +52,17 @@ def login(email: str, password: str, db: Session = Depends(get_db)):
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@router.get("/users", response_model=List[UserResponse], dependencies=[Depends(JWTBearer())])
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    users = get_users(db, skip=skip, limit=limit)
-    return users
-
-@router.get("/users/me", response_model=UserResponse)
-def read_user_me(current_user: UserResponse = Depends(JWTBearer())):
+@router.get("/users/me", response_model=User)
+def read_user_me(current_user: UserModel = Depends(JWTBearer())):
     return current_user
 
-@router.put("/users/{user_id}", response_model=UserResponse, dependencies=[Depends(JWTBearer())])
-def update_user_endpoint(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
-    db_user = update_user(db, user_id, user)
-    if db_user is None:
+@router.put("/users/me/profile", response_model=User)
+def update_my_profile(
+    user_update: UserUpdate,
+    current_user: UserModel = Depends(JWTBearer()),
+    db: Session = Depends(get_db)
+):
+    updated_user = update_user_profile(db, current_user.id, user_update)
+    if not updated_user:
         raise HTTPException(status_code=404, detail="User not found")
-    return db_user
-
-@router.delete("/users/{user_id}", response_model=UserResponse, dependencies=[Depends(JWTBearer())])
-def delete_user_endpoint(user_id: int, db: Session = Depends(get_db)):
-    db_user = delete_user(db, user_id)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return db_user
+    return updated_user
