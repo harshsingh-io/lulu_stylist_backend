@@ -129,6 +129,7 @@ class Item(Base):
     image_data = Column(String)
     notes = Column(String)
     size = Column(String)
+    is_deleted = Column(Boolean, default=False)  # Add this field
 
     # Relationships
     user = relationship("User", back_populates="wardrobe_items")

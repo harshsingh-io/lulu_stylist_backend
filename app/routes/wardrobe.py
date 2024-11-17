@@ -21,6 +21,7 @@ def read_items(
     current_user: User = Depends(JWTBearer()),
     db: Session = Depends(get_db)
 ):
+    """Get all non-deleted items for the current user"""
     items = get_user_items(db, current_user.id, skip=skip, limit=limit)
     return items
 
@@ -38,8 +39,8 @@ def read_item(
     current_user: User = Depends(JWTBearer()),
     db: Session = Depends(get_db)
 ):
-    item = get_item(db, item_id)
-    if item is None or item.user_id != current_user.id:
+    item = get_item(db, item_id, current_user.id)
+    if item is None or item.is_deleted:  # Check both conditions
         raise HTTPException(status_code=404, detail="Item not found")
     return item
 
@@ -50,10 +51,10 @@ def update_user_item(
     current_user: User = Depends(JWTBearer()),
     db: Session = Depends(get_db)
 ):
-    db_item = get_item(db, item_id)
-    if db_item is None or db_item.user_id != current_user.id:
+    updated_item = update_item(db, item_id, item, current_user.id)
+    if updated_item is None:
         raise HTTPException(status_code=404, detail="Item not found")
-    return update_item(db=db, item_id=item_id, item=item)
+    return updated_item
 
 @router.delete("/items/{item_id}", response_model=Item)
 def delete_user_item(
@@ -61,7 +62,7 @@ def delete_user_item(
     current_user: User = Depends(JWTBearer()),
     db: Session = Depends(get_db)
 ):
-    db_item = get_item(db, item_id)
-    if db_item is None or db_item.user_id != current_user.id:
+    deleted_item = delete_item(db, item_id, current_user.id)
+    if deleted_item is None:
         raise HTTPException(status_code=404, detail="Item not found")
-    return delete_item(db=db, item_id=item_id)
+    return deleted_item
