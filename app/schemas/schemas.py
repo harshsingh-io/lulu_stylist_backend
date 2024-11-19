@@ -17,7 +17,7 @@ class TagBaseSchema(BaseModel):
     name: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class TagCreateSchema(TagBaseSchema):
     pass
@@ -141,7 +141,7 @@ class ItemSchema(BaseModel):
     tags: List[TagSchema] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # User Preferences Schemas
 class UserPreferencesBaseSchema(BaseModel):
