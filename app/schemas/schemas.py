@@ -1,7 +1,8 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional
 from datetime import datetime
 from enum import Enum
+from uuid import UUID
 
 class CategoryEnum(str, Enum):
     TOP = "TOP"
@@ -11,146 +12,178 @@ class CategoryEnum(str, Enum):
     INNERWEAR = "INNERWEAR"
     OTHER = "OTHER"
 
-class TagBase(BaseModel):
+# Tag Schemas
+class TagBaseSchema(BaseModel):
     name: str
 
-class TagCreate(TagBase):
+    class Config:
+        orm_mode = True
+
+class TagCreateSchema(TagBaseSchema):
     pass
 
-class Tag(TagBase):
-    id: int
+class TagSchema(TagBaseSchema):
+    id: UUID
 
     class Config:
         from_attributes = True
 
-class BudgetBase(BaseModel):
+# Budget Schemas
+class BudgetBaseSchema(BaseModel):
     min_amount: float
     max_amount: float
 
-class Budget(BudgetBase):
-    id: int
+class BudgetSchema(BudgetBaseSchema):
+    id: UUID
 
     class Config:
         from_attributes = True
 
-class ShoppingHabitsBase(BaseModel):
+# Shopping Habits Schemas
+class ShoppingHabitsBaseSchema(BaseModel):
     frequency: str
     preferred_retailers: List[str]
 
-class ShoppingHabits(ShoppingHabitsBase):
-    id: int
+class ShoppingHabitsSchema(ShoppingHabitsBaseSchema):
+    id: UUID
 
     class Config:
         from_attributes = True
 
-class StylePreferencesBase(BaseModel):
+# Style Preferences Schemas
+class StylePreferencesBaseSchema(BaseModel):
     favorite_colors: List[str]
     preferred_brands: List[str]
     lifestyle_choices: List[str]
 
-class StylePreferencesCreate(StylePreferencesBase):
-    budget: BudgetBase
-    shopping_habits: ShoppingHabitsBase
+class StylePreferencesCreateSchema(StylePreferencesBaseSchema):
+    budget: BudgetBaseSchema
+    shopping_habits: ShoppingHabitsBaseSchema
 
-class StylePreferences(StylePreferencesBase):
-    id: int
-    budget: Budget
-    shopping_habits: ShoppingHabits
+class StylePreferencesSchema(StylePreferencesBaseSchema):
+    id: UUID
+    budget: BudgetSchema
+    shopping_habits: ShoppingHabitsSchema
 
     class Config:
         from_attributes = True
 
-class BodyMeasurementsBase(BaseModel):
+# Body Measurements Schemas
+class BodyMeasurementsBaseSchema(BaseModel):
     height: float
     weight: float
     body_type: Optional[str] = None
 
-class BodyMeasurements(BodyMeasurementsBase):
-    id: int
+class BodyMeasurementsSchema(BodyMeasurementsBaseSchema):
+    id: UUID
 
     class Config:
         from_attributes = True
 
-class UserDetailsBase(BaseModel):
+# User Details Schemas
+class UserDetailsBaseSchema(BaseModel):
     name: str
     age: int
     gender: Optional[str] = None
     location_long: Optional[str] = None
     location_lat: Optional[str] = None
 
-class UserDetailsCreate(UserDetailsBase):
-    body_measurements: Optional[BodyMeasurementsBase] = None
-    style_preferences: Optional[StylePreferencesCreate] = None
+class UserDetailsCreateSchema(UserDetailsBaseSchema):
+    body_measurements: Optional[BodyMeasurementsBaseSchema] = None
+    style_preferences: Optional[StylePreferencesCreateSchema] = None
 
-class UserDetails(UserDetailsBase):
-    id: int
-    body_measurements: Optional[BodyMeasurements] = None
-    style_preferences: Optional[StylePreferences] = None
+class UserDetailsSchema(UserDetailsBaseSchema):
+    id: UUID
+    body_measurements: Optional[BodyMeasurementsSchema] = None
+    style_preferences: Optional[StylePreferencesSchema] = None
 
     class Config:
         from_attributes = True
 
-class ItemBase(BaseModel):
+# Item Schemas
+class ItemBaseSchema(BaseModel):
     name: str
     colors: List[str]
     brand: str
     category: CategoryEnum
     is_favorite: bool
     price: float
-    image_local_path: str
-    image_data: str
+    image_url: Optional[str] = None
     notes: str
     size: str
 
-class ItemCreate(ItemBase):
-    tag_ids: List[int]
+class ItemCreateSchema(BaseModel):
+    name: str = Field(..., example="Summer Dress")
+    description: Optional[str] = Field(None, example="Light and breezy summer dress.")
+    colors: Optional[List[str]] = Field(None, example=["Red", "Blue"])
+    brand: Optional[str] = Field(None, example="Zara")
+    category: CategoryEnum = Field(..., example="TOP")
+    is_favorite: Optional[bool] = Field(False, example=True)
+    price: Optional[float] = Field(None, example=49.99)
+    notes: Optional[str] = Field(None, example="Bought during summer sale.")
+    size: Optional[str] = Field(None, example="M")
+    tags: Optional[List[str]] = Field(default_factory=list, example=["Casual", "Summer"])
 
-class Item(ItemBase):
-    id: int
-    user_id: int
+class ItemSchema(BaseModel):
+    id: UUID
+    user_id: UUID
+    name: str
+    description: Optional[str]
+    colors: Optional[List[str]]
+    brand: Optional[str]
+    category: CategoryEnum
+    is_favorite: bool
+    price: Optional[float]
+    notes: Optional[str]
+    size: Optional[str]
+    image_url: Optional[str]
     created_at: datetime
-    tags: List[Tag]
+    tags: List[TagSchema] = []
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
-class UserPreferencesBase(BaseModel):
+# User Preferences Schemas
+class UserPreferencesBaseSchema(BaseModel):
     receive_notifications: bool
     allow_data_sharing: bool
 
-class UserPreferences(UserPreferencesBase):
-    id: int
+class UserPreferencesSchema(UserPreferencesBaseSchema):
+    id: UUID
 
     class Config:
         from_attributes = True
 
-class UserBase(BaseModel):
+# User Schemas
+class UserBaseSchema(BaseModel):
     email: EmailStr
     username: str
 
-class UserCreate(UserBase):
+class UserCreateSchema(UserBaseSchema):
     password: str
 
-class UserUpdate(BaseModel):
-    user_details: Optional[UserDetailsCreate] = None
-    wardrobe_items: Optional[List[ItemCreate]] = None
-    user_preferences: Optional[UserPreferencesBase] = None
+class UserUpdateSchema(BaseModel):
+    user_details: Optional[UserDetailsCreateSchema] = None
+    # wardrobe_items: Optional[List[ItemCreateSchema]] = None
+    user_preferences: Optional[UserPreferencesBaseSchema] = None
 
-class User(UserBase):
-    id: int
+class UserSchema(UserBaseSchema):
+    id: UUID
     is_active: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
-    user_details: Optional[UserDetails] = None
-    wardrobe_items: List[Item] = []
-    user_preferences: Optional[UserPreferences] = None
+    user_details: Optional[UserDetailsSchema] = None
+    wardrobe_items: List[ItemSchema] = []
+    user_preferences: Optional[UserPreferencesSchema] = None
+    profile_image_url: Optional[str] = None
 
     class Config:
         from_attributes = True
 
-class Token(BaseModel):
+# Token Schemas
+class TokenSchema(BaseModel):
     access_token: str
     token_type: str
 
-class TokenData(BaseModel):
+class TokenDataSchema(BaseModel):
     email: Optional[str] = None
