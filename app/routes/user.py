@@ -4,7 +4,7 @@ from typing import List
 from datetime import timedelta
 from ..database.session import get_db
 from ..schemas.schemas import (
-    UserCreate, User, UserUpdate, Token
+    UserCreateSchema, UserSchema, UserUpdateSchema, TokenSchema
 )
 from ..crud.user import (
     create_user,
@@ -18,12 +18,12 @@ from ..auth.jwt_handler import (
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
 from ..auth.jwt_bearer import JWTBearer
-from ..models.models import User as UserModel
+from ..models.models import UserModel
 
 router = APIRouter()
 
-@router.post("/register", response_model=User)
-def register(user: UserCreate, db: Session = Depends(get_db)):
+@router.post("/register", response_model=UserSchema)
+def register(user: UserCreateSchema, db: Session = Depends(get_db)):
     db_user = get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(
@@ -32,7 +32,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         )
     return create_user(db=db, user=user)
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=TokenSchema)
 def login(email: str, password: str, db: Session = Depends(get_db)):
     user = get_user_by_email(db, email=email)
     if not user:
@@ -52,13 +52,13 @@ def login(email: str, password: str, db: Session = Depends(get_db)):
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@router.get("/users/me", response_model=User)
+@router.get("/users/me", response_model=UserSchema)
 def read_user_me(current_user: UserModel = Depends(JWTBearer())):
     return current_user
 
-@router.put("/users/me/profile", response_model=User)
+@router.put("/users/me/profile", response_model=UserSchema)
 def update_my_profile(
-    user_update: UserUpdate,
+    user_update: UserUpdateSchema,
     current_user: UserModel = Depends(JWTBearer()),
     db: Session = Depends(get_db)
 ):
