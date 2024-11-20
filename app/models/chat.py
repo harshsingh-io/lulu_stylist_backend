@@ -17,3 +17,5 @@ class ChatSession(BaseModel):
     session_name: Optional[str] = None
     user_context: Optional[Dict] = None  # Store user's wardrobe and preferences
     
+    class Config:
+        from_attributes = True

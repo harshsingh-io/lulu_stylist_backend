@@ -1,3 +1,4 @@
+#crud/wardrobe.py
 from sqlalchemy.orm import Session
 from ..models.models import ItemModel, TagModel
 from ..schemas.schemas import ItemCreateSchema
@@ -8,7 +9,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def get_item(db: Session, item_id: int):
+def get_item(db: Session, item_id: UUID):
     return db.query(ItemModel).filter(ItemModel.id == item_id).first()
 
 def get_user_items(db: Session, user_id: int, skip: int = 0, limit: int = 100):
