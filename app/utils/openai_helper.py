@@ -5,6 +5,8 @@ import logging
 import os
 from dotenv import load_dotenv
 from ..models.chat import Message
+import tiktoken
+
 
 load_dotenv()
 
@@ -12,80 +14,128 @@ logger = logging.getLogger(__name__)
 
 class OpenAIHelper:
     def __init__(self):
+        self.max_context_length = 8192
         openai.api_key = os.getenv('OPENAI_API_KEY')
         self.model = "gpt-4"  # You can also use "gpt-4-1106-preview" for the latest version
-        self.max_tokens = 8000  # Adjust based on your needs
+        self.max_tokens = 800  # Adjusted to a reasonable value
+        self.max_context_length = 8192  # GPT-4 context length
         self.system_prompt = """You are a personal fashion stylist AI assistant. You help users with fashion advice, 
         outfit combinations, and style recommendations. Your responses should be professional, 
         friendly, and tailored to each user's specific needs and preferences."""
 
-    def _prepare_messages(self, chat_history: List[Message], include_system: bool = True) -> List[Dict]:
+    def _prepare_messages(self, chat_history: List[Message], user_context: Optional[Dict] = None) -> List[Dict]:
         """Prepare messages for the OpenAI API format."""
         messages = []
         
-        # Add system prompt if requested
-        if include_system:
-            messages.append({
-                "role": "system",
-                "content": self.system_prompt
-            })
+        # Add system prompt with context if available
+        system_content = self.system_prompt
+        if user_context:
+            system_content += "\n\nUser's Current Context:"
+            if 'wardrobe_items' in user_context:
+                items = user_context['wardrobe_items']
+                system_content += f"\nWardrobe ({len(items)} items):"
+                for item in items:
+                    item_desc = f"\n- {item['name']}: {item['category']}"
+                    if item.get('brand'): item_desc += f", by {item['brand']}"
+                    if item.get('color'): item_desc += f", in {', '.join(item['color'])}"
+                    if item.get('size'): item_desc += f", size {item['size']}"
+                    if item.get('notes'): item_desc += f" ({item['notes']})"
+                    system_content += item_desc
+
+            if 'user_details' in user_context:
+                details = user_context['user_details']
+                if 'body_measurements' in details:
+                    measurements = details['body_measurements']
+                    system_content += "\n\nBody Measurements:"
+                    if measurements.get('height'): system_content += f"\n- Height: {measurements['height']}cm"
+                    if measurements.get('weight'): system_content += f"\n- Weight: {measurements['weight']}kg"
+                    if measurements.get('body_type'): system_content += f"\n- Body Type: {measurements['body_type']}"
+
+                if 'style_preferences' in details:
+                    prefs = details['style_preferences']
+                    system_content += "\n\nStyle Preferences:"
+                    if prefs.get('favorite_colors'): 
+                        system_content += f"\n- Favorite Colors: {', '.join(prefs['favorite_colors'])}"
+                    if prefs.get('preferred_brands'): 
+                        system_content += f"\n- Preferred Brands: {', '.join(prefs['preferred_brands'])}"
+                    if prefs.get('lifestyle_choices'):
+                        system_content += f"\n- Lifestyle: {', '.join(prefs['lifestyle_choices'])}"
+                    if prefs.get('budget'):
+                        system_content += f"\n- Budget Range: ${prefs['budget']['min_amount']} - ${prefs['budget']['max_amount']}"
+
+        messages.append({
+            "role": "system",
+            "content": system_content
+        })
 
         # Add chat history
         for msg in chat_history:
-            # Skip system messages if we already added our own
-            if include_system and msg.role == "system":
-                continue
-            messages.append({
-                "role": msg.role,
-                "content": msg.content
-            })
+            if msg.role != "system":  # Skip original system messages
+                messages.append({
+                    "role": msg.role,
+                    "content": msg.content
+                })
 
         return messages
+    
+    def _count_tokens(self, messages: List[Dict]) -> int:
+        encoding = tiktoken.encoding_for_model(self.model)
+        num_tokens = 0
+        for message in messages:
+            num_tokens += len(encoding.encode(message['content']))
+        return num_tokens
 
     async def get_completion(
         self, 
         chat_history: List[Message],
+        user_context: Optional[Dict] = None,
         temperature: float = 0.7,
-        max_tokens: Optional[int] = None
+        max_tokens: Optional[int] = None,
+        retry_count: int = 0
     ) -> str:
-        """
-        Get a completion from GPT-4 based on the chat history.
-        
-        Args:
-            chat_history: List of previous messages
-            temperature: Controls randomness (0.0-1.0)
-            max_tokens: Maximum tokens in response
-            
-        Returns:
-            str: The AI's response
-        """
         try:
-            messages = self._prepare_messages(chat_history)
-            
+            messages = self._prepare_messages(chat_history, user_context)
+            token_count = self._count_tokens(messages)
+            max_available_tokens = self.max_context_length - token_count
+
+            if max_available_tokens <= 0:
+                raise ValueError("Messages are too long. Cannot generate any response.")
+
             response = await openai.ChatCompletion.acreate(
                 model=self.model,
                 messages=messages,
                 temperature=temperature,
-                max_tokens=max_tokens or self.max_tokens,
+                max_tokens=min(max_tokens or self.max_tokens, max_available_tokens),
                 n=1,
                 presence_penalty=0.1,
                 frequency_penalty=0.1,
             )
-            
+
             return response.choices[0].message.content
+
+        except openai.error.RateLimitError as e:
+            if retry_count < 5:
+                wait_time = (2 ** retry_count) * 5  # Exponential backoff
+                logger.warning(f"Rate limit exceeded. Retrying in {wait_time} seconds...")
+                await asyncio.sleep(wait_time)
+                return await self.get_completion(
+                    chat_history, user_context, temperature, max_tokens, retry_count + 1
+                )
+            else:
+                logger.error("Maximum retry attempts reached. Rate limit error persists.")
+                raise
 
         except openai.error.InvalidRequestError as e:
             if "tokens" in str(e).lower():
-                # If we hit token limit, try again with truncated history
                 logger.warning("Token limit exceeded, retrying with truncated history")
-                truncated_history = chat_history[-5:]  # Keep last 5 messages
-                return await self.get_completion(truncated_history, temperature, max_tokens)
+                truncated_history = chat_history[-5:]
+                return await self.get_completion(truncated_history, user_context, temperature, max_tokens)
             raise
 
         except Exception as e:
             logger.error(f"Error in OpenAI completion: {str(e)}")
             raise
-
+        
     async def get_structured_completion(
         self,
         chat_history: List[Message],
@@ -120,7 +170,8 @@ class OpenAIHelper:
                 n=1,
                 presence_penalty=0.1,
                 frequency_penalty=0.1,
-                response_format={ "type": "json_object" }  # Ensure JSON response
+                # Note: The 'response_format' parameter is not officially supported
+                # Remove it or adjust according to OpenAI's actual API if necessary
             )
             
             return response.choices[0].message.content
@@ -167,15 +218,17 @@ class OpenAIHelper:
 # Create a singleton instance
 openai_helper = OpenAIHelper()
 
+
 # Convenience function for chat routes
-async def get_ai_response(messages: List[Message]) -> str:
+async def get_ai_response(messages: List[Message], user_context: Optional[Dict] = None) -> str:
     """
     Get an AI response for the chat feature.
     
     Args:
         messages: List of previous messages in the conversation
+        user_context: Optional dictionary containing user's wardrobe and preferences
         
     Returns:
         str: The AI's response
     """
-    return await openai_helper.get_completion(messages)
+    return await openai_helper.get_completion(messages, user_context)

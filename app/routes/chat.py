@@ -63,6 +63,9 @@ async def send_message(
     # Add user message
     await ChatCRUD.add_message(session_id, "user", message)
     
+    # Re-fetch the updated chat session
+    chat_session = await ChatCRUD.get_chat_history(session_id)
+    
     # Get AI response with context
     ai_response = await get_ai_response(chat_session.messages, chat_session.user_context)
     
@@ -73,8 +76,17 @@ async def send_message(
 
 
 @router.get("/sessions", response_model=List[ChatSession])
-async def list_chat_sessions(current_user: UserModel = Depends(jwt_bearer)):
-    return await ChatCRUD.get_user_chat_sessions(current_user.id)
+async def list_chat_sessions(
+    current_user: UserModel = Depends(jwt_bearer)
+):
+    try:
+        sessions = await ChatCRUD.get_user_chat_sessions(current_user.id)
+        return sessions
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error retrieving chat sessions: {str(e)}"
+        )
 
 @router.get("/{session_id}", response_model=ChatSession)
 async def get_chat_history(
@@ -84,6 +96,22 @@ async def get_chat_history(
     chat = await ChatCRUD.get_chat_history(session_id)
     if not chat:
         raise HTTPException(status_code=404, detail="Chat session not found")
-    if chat.user_id != current_user.id:
+    if str(chat.user_id) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Not authorized to access this chat")
     return chat
+
+@router.delete("/{session_id}")
+async def delete_chat_session(
+    session_id: str,
+    current_user: UserModel = Depends(jwt_bearer)
+):
+    chat = await ChatCRUD.get_chat_history(session_id)
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat session not found")
+    if str(chat.user_id) != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Not authorized to delete this chat")
+    
+    success = await ChatCRUD.delete_chat_session(session_id)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to delete chat session")
+    return {"message": "Chat session deleted successfully"}
