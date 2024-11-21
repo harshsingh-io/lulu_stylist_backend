@@ -50,6 +50,7 @@ The backend for the AI Stylist App provides a robust and scalable infrastructure
      - Create a `.env` file and add the necessary configurations (database credentials, secret keys, etc.).
         ```env
         DATABASE_URL=postgresql://<username>:<password>@localhost:5432/ai_fashion_app
+        SECRET_KEY=<generated-jwt-key>
         ALGORITHM=HS256
         ACCESS_TOKEN_EXPIRE_MINUTES=1000
 
