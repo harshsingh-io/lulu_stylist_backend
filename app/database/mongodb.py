@@ -1,10 +1,11 @@
 # app/database/mongodb.py
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
-import os
 from dotenv import load_dotenv
+from ..config import get_settings
 
 load_dotenv()
+settings = get_settings()
 
 class MongoDB:
     client: AsyncIOMotorClient = None
@@ -12,16 +13,15 @@ class MongoDB:
     @classmethod
     async def connect_to_mongo(cls):
         try:
-            mongodb_url = os.getenv('MONGODB_URL')
-            if not mongodb_url:
-                raise ValueError("MONGODB_URL environment variable is not set")
+            if not settings.MONGODB_URL:
+                raise ValueError("MONGODB_URL is not configured")
                 
             cls.client = AsyncIOMotorClient(
-                mongodb_url,
+                settings.MONGODB_URL,
                 server_api=ServerApi('1')
             )
             await cls.client.admin.command('ping')
-            print("Connected to MongoDB!")
+            print(f"Connected to MongoDB at {settings.MONGODB_HOST}!")
         except Exception as e:
             print(f"Error connecting to MongoDB: {e}")
             raise
@@ -34,9 +34,8 @@ class MongoDB:
 
     @classmethod
     def get_db(cls):
-        db_name = os.getenv('MONGODB_DB_NAME')
-        if not db_name:
-            raise ValueError("MONGODB_DB_NAME environment variable is not set")
+        if not settings.MONGODB_DB_NAME:
+            raise ValueError("MONGODB_DB_NAME is not configured")
         if cls.client is None:
             raise RuntimeError("MongoDB client is not initialized. Call connect_to_mongo() first.")
-        return cls.client[db_name]
+        return cls.client[settings.MONGODB_DB_NAME]
