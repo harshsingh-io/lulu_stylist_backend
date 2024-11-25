@@ -28,14 +28,40 @@ jobs:
         AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
+        MONGODB_HOST: ${{ secrets.MONGODB_HOST }}
+        MONGODB_URL: ${{ secrets.MONGODB_URL }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        OPENAI_MAX_TOKENS: ${{ secrets.OPENAI_MAX_TOKENS }}
         POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+        REFRESH_SECRET_KEY: ${{ secrets.REFRESH_SECRET_KEY }}
+        REFRESH_TOKEN_EXPIRE_DAYS: ${{ secrets.REFRESH_TOKEN_EXPIRE_DAYS }}
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
       run: docker compose build
 
     - name: Docker Up
-      run: docker compose up
+      env:
+        ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+        ALGORITHM: ${{ secrets.ALGORITHM }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
+        MONGODB_HOST: ${{ secrets.MONGODB_HOST }}
+        MONGODB_URL: ${{ secrets.MONGODB_URL }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        OPENAI_MAX_TOKENS: ${{ secrets.OPENAI_MAX_TOKENS }}
+        POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+        REFRESH_SECRET_KEY: ${{ secrets.REFRESH_SECRET_KEY }}
+        REFRESH_TOKEN_EXPIRE_DAYS: ${{ secrets.REFRESH_TOKEN_EXPIRE_DAYS }}
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      run: docker compose up -d
 
     - name: Docker Clean Up
       run: docker system prune -af
