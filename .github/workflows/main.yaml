@@ -61,7 +61,7 @@ jobs:
       run: docker compose up -d
 
     - name: Check AWS Environment Variables
-      run: echo "AWS Region: ${{ secrets.AWS_REGION }}"
+      run: echo " ${{  secrets.AWS_REGION }} "
 
       
     - name: Docker Clean Up
