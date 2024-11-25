@@ -22,6 +22,10 @@ class S3Client:
         self.aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
         self.region_name = os.getenv('AWS_REGION', 'us-east-1')
         self.bucket_name = os.getenv('AWS_S3_BUCKET')
+            # Debugging
+        logger.debug(f"AWS_ACCESS_KEY_ID: {self.aws_access_key_id}")
+        logger.debug(f"AWS_SECRET_ACCESS_KEY: {self.aws_secret_access_key}")
+        logger.debug(f"AWS_S3_BUCKET: {self.bucket_name}")
 
         if not all([self.aws_access_key_id, self.aws_secret_access_key, self.bucket_name]):
             logger.error("AWS credentials or bucket name not set in environment variables.")
