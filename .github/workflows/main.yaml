@@ -1,4 +1,4 @@
-name: ai-fashion-ci-cd
+name: ai-fashion-ci=cd
 
 on:
   push:
