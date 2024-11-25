@@ -7,7 +7,7 @@ on:
 
 jobs:
   ci-cd:
-    runs-on: [selfhosted , ai-fashion-bck ]
+    runs-on: ai-fashion-bck
     steps:
     
     - name: Server Update
