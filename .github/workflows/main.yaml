@@ -59,6 +59,10 @@ jobs:
         REFRESH_TOKEN_EXPIRE_DAYS: ${{ secrets.REFRESH_TOKEN_EXPIRE_DAYS }}
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
       run: docker compose up -d
+
+    - name: Check AWS Environment Variables
+      run: echo "AWS Region: ${{ secrets.AWS_REGION }}"
+
       
     - name: Docker Clean Up
       run: docker system prune -af
