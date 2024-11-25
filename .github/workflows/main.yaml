@@ -20,9 +20,6 @@ jobs:
       run: docker compose down
 
     - name: Docker Build
-      run: docker compose build
-
-    - name: Docker Up
       env:
         ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
         ALGORITHM: ${{ secrets.ALGORITHM }}
@@ -35,6 +32,9 @@ jobs:
         POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      run: docker compose build
+
+    - name: Docker Up
       run: docker compose up
 
     - name: Docker Clean Up
