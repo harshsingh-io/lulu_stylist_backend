@@ -3,7 +3,18 @@ from typing import List, Optional
 from datetime import datetime
 from enum import Enum
 from uuid import UUID
+# schemas/schemas.py
+from pydantic import BaseModel
 
+class TokenSchema(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str
+
+class TokenPayload(BaseModel):
+    sub: str | None = None
+    exp: int | None = None
+    type: str | None = None
 class CategoryEnum(str, Enum):
     TOP = "TOP"
     BOTTOM = "BOTTOM"

@@ -1,8 +1,41 @@
 from sqlalchemy.orm import Session
 from ..models.models import UserModel, UserDetailsModel, BodyMeasurementsModel, StylePreferencesModel, BudgetModel, ShoppingHabitsModel, UserPreferencesModel
 from ..schemas.schemas import UserCreateSchema, UserUpdateSchema
-from ..auth.jwt_handler import get_password_hash
+from ..auth.jwt_handler import ALGORITHM, REFRESH_SECRET_KEY, get_password_hash
+from jose import jwt
+from datetime import datetime
+from ..models.refresh_token import RefreshToken
 
+def create_refresh_token(db: Session, user_id: int, token: str):
+    # Decode token to get JTI and expiration
+    payload = jwt.decode(token, REFRESH_SECRET_KEY, algorithms=[ALGORITHM])
+    jti = payload["jti"]
+    exp = datetime.fromtimestamp(payload["exp"])
+    
+    refresh_token = RefreshToken(
+        user_id=user_id,
+        token_id=jti,
+        expires_at=exp
+    )
+    db.add(refresh_token)
+    db.commit()
+    return refresh_token
+
+def get_refresh_token(db: Session, token_id: str):
+    return db.query(RefreshToken).filter(
+        RefreshToken.token_id == token_id,
+        RefreshToken.is_revoked == False,
+        RefreshToken.expires_at > datetime.utcnow()
+    ).first()
+
+def invalidate_refresh_token(db: Session, user_id: int):
+    db.query(RefreshToken).filter(
+        RefreshToken.user_id == user_id,
+        RefreshToken.is_revoked == False
+    ).update({"is_revoked": True})
+    db.commit()
+    
+    
 def get_user_by_email(db: Session, email: str):
     return db.query(UserModel).filter(UserModel.email == email).first()
 
