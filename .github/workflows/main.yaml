@@ -13,9 +13,6 @@ jobs:
     - name: Code Checkout
       uses: actions/checkout@v3
       
-    - name: Compose Down
-      run: docker compose down
-      
     - name: Docker Build
       env:
         ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
@@ -37,7 +34,10 @@ jobs:
         REFRESH_TOKEN_EXPIRE_DAYS: ${{ secrets.REFRESH_TOKEN_EXPIRE_DAYS }}
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
       run: docker compose build
-      
+          
+    - name: Compose Down
+      run: docker compose down
+
     - name: Docker Up
       env:
         ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
@@ -63,6 +63,5 @@ jobs:
     - name: Check AWS Environment Variables
       run: echo " ${{  secrets.AWS_REGION }} "
 
-      
     - name: Docker Clean Up
       run: docker system prune -af
