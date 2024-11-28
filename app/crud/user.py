@@ -5,6 +5,7 @@ from ..auth.jwt_handler import ALGORITHM, REFRESH_SECRET_KEY, get_password_hash
 from jose import jwt
 from datetime import datetime
 from ..models.refresh_token import RefreshToken
+from loguru import logger
 
 def create_refresh_token(db: Session, user_id: int, token: str):
     # Decode token to get JTI and expiration
@@ -21,20 +22,34 @@ def create_refresh_token(db: Session, user_id: int, token: str):
     db.commit()
     return refresh_token
 
-def get_refresh_token(db: Session, token_id: str):
-    return db.query(RefreshToken).filter(
+def get_refresh_token(db: Session, token_id: str, user_id: int):
+    logger.debug(f"Looking up refresh token - token_id: {token_id}, user_id: {user_id}")
+    token = db.query(RefreshToken).filter(
         RefreshToken.token_id == token_id,
+        RefreshToken.user_id == user_id,
         RefreshToken.is_revoked == False,
         RefreshToken.expires_at > datetime.utcnow()
     ).first()
+    
+    if token:
+        logger.debug("Refresh token found and valid")
+    else:
+        logger.warning("Refresh token not found or invalid")
+    return token
 
 def invalidate_refresh_token(db: Session, user_id: int):
     db.query(RefreshToken).filter(
         RefreshToken.user_id == user_id,
         RefreshToken.is_revoked == False
     ).update({"is_revoked": True})
-    db.commit()
+    db.commit()  # Added missing parentheses
     
+def cleanup_expired_tokens(db: Session):
+    """Remove expired refresh tokens from the database"""
+    db.query(RefreshToken).filter(
+        RefreshToken.expires_at < datetime.utcnow()
+    ).delete()
+    db.commit()
     
 def get_user_by_email(db: Session, email: str):
     return db.query(UserModel).filter(UserModel.email == email).first()

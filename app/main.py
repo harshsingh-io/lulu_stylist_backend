@@ -2,6 +2,23 @@ from fastapi import FastAPI
 from .database.base import Base, engine
 from .routes import user, wardrobe, upload, chat
 from .database.mongodb import MongoDB
+from loguru import logger
+import sys
+
+# Configure Loguru
+logger.remove()  # Remove default handler
+logger.add(
+    sys.stdout,
+    format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+    level="DEBUG"
+)
+logger.add(
+    "logs/api.log",
+    rotation="500 MB",
+    retention="10 days",
+    level="DEBUG"
+)
+
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
