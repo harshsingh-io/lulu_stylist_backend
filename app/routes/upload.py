@@ -80,6 +80,7 @@
 #         raise HTTPException(status_code=500, detail="Error uploading item image")
 # routers/upload.py (assuming the file name)
 
+# app/routes/upload.py
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from ..database.session import get_db

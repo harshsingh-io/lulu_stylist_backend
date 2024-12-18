@@ -1,14 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
+# app/routes/wardrobe.py
+from fastapi import APIRouter, Depends, HTTPException, File, Query, UploadFile
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from uuid import UUID
 import logging
+
+from app.enums.enums import CategoryEnum
 
 from ..database.session import get_db
 from ..schemas.schemas import ItemCreateSchema, ItemSchema, UserSchema, TagSchema
 from ..crud.wardrobe import (
     get_user_items,
     create_item,
+    get_user_items_by_category,
     update_item,
     delete_item,
     upload_item_image
@@ -23,15 +27,24 @@ logger = logging.getLogger(__name__)
 
 s3_client = S3Client()
 
+
 @router.get("/items", response_model=List[ItemSchema])
 def read_items(
+    category: CategoryEnum = Query(..., description="Category of wardrobe items to fetch"),
     skip: int = 0,
     limit: int = 100,
     current_user: UserSchema = Depends(JWTBearer()),
     db: Session = Depends(get_db)
 ):
-    """Get all non-deleted items for the current user"""
-    items = get_user_items(db, current_user.id, skip=skip, limit=limit)
+    """
+    Get all non-deleted items for the current user filtered by category.
+    
+    Args:
+        category: Required. The category of items to fetch (TOP, BOTTOM, SHOES, etc.)
+        skip: Number of items to skip (pagination)
+        limit: Maximum number of items to return
+    """
+    items = get_user_items_by_category(db, current_user.id, category, skip=skip, limit=limit)
     return items
 
 @router.post("/items", response_model=ItemSchema, status_code=201)
