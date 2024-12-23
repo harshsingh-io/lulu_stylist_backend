@@ -1,4 +1,4 @@
-# AI Stylist App Backend
+# AI Stylist App Backend .
 
 The backend for the AI Stylist App provides a robust and scalable infrastructure to deliver personalized fashion advice through an interactive AI chat interface. It allows users to manage their wardrobe digitally and enhances recommendations based on individual user details.
 
