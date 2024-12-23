@@ -18,6 +18,7 @@ logging.basicConfig(level=logging.INFO)
 
 class S3Client:
     def __init__(self):
+        load_dotenv(override=True)
         self.aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
         self.aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
         self.region_name = os.getenv('AWS_REGION', 'us-east-1')
@@ -129,16 +130,25 @@ class S3Client:
             return True
 
         try:
+            # Handle both old and new bucket URLs
+            if self.bucket_name not in file_url:
+                logger.info(f"File URL is from a different bucket, skipping deletion: {file_url}")
+                return True
+
             # Extract key from URL
             prefix = f"https://{self.bucket_name}.s3.{self.region_name}.amazonaws.com/"
             if not file_url.startswith(prefix):
-                logger.error("File URL does not match the expected S3 bucket URL.")
-                raise HTTPException(status_code=400, detail="Invalid file URL.")
+                # Try alternative URL format
+                prefix = f"https://s3.{self.region_name}.amazonaws.com/{self.bucket_name}/"
+                if not file_url.startswith(prefix):
+                    logger.warning(f"File URL format not recognized: {file_url}")
+                    return True
 
             key = file_url[len(prefix):]
             if not key:
-                logger.error("No key found in the file URL.")
-                raise HTTPException(status_code=400, detail="Invalid file URL.")
+                logger.warning("No key found in the file URL.")
+                return True
+                
             logger.debug(f"Extracted S3 key: {key}")
 
             # Asynchronously delete from S3
@@ -160,10 +170,9 @@ class S3Client:
 
         except ClientError as e:
             logger.error(f"S3 ClientError during deletion: {str(e)}")
-            raise HTTPException(status_code=500, detail="Error deleting file from S3.")
-        except HTTPException as he:
-            logger.error(f"HTTPException during file deletion: {he.detail}")
-            raise he
+            # Don't raise exception, just log and continue
+            return False
         except Exception as e:
             logger.error(f"Unexpected error during file deletion: {str(e)}")
-            raise HTTPException(status_code=500, detail="Unexpected error deleting file.")
+            # Don't raise exception, just log and continue
+            return False
