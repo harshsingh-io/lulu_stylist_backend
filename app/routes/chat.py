@@ -42,7 +42,8 @@ async def create_chat_session(
         db, 
         current_user.id,
         context_options,
-        session_name
+        session_name,
+        
     )
     return {"session_id": session_id}
 
