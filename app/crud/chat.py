@@ -262,3 +262,14 @@ class ChatCRUD:
         except Exception as e:
             print(f"Error clearing chat history: {e}")
             return False
+        
+    @staticmethod
+    async def delete_all_user_chat_sessions(user_id: UUID) -> bool:
+        """Delete all chat sessions for a user"""
+        mongodb = MongoDB.get_db()
+        try:
+            result = await mongodb.chat_sessions.delete_many({"user_id": str(user_id)})
+            return result.deleted_count > 0
+        except Exception as e:
+            print(f"Error deleting all chat sessions: {e}")
+            return False
