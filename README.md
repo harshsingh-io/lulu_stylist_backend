@@ -1,6 +1,6 @@
-# AI Stylist App Backend .
+# AI Stylist App Backend
 
-The backend for the AI Stylist App provides a robust and scalable infrastructure to deliver personalized fashion advice through an interactive AI chat interface. It allows users to manage their wardrobe digitally and enhances recommendations based on individual user details.
+A robust and scalable FastAPI backend for the AI Stylist App that provides personalized fashion advice through an AI chat interface, wardrobe management, and user profile customization.
 
 [Front-End Of Lulu AI Fashion Stylist](https://github.com/harshsingh-io/lulu_stylist_app)
 
@@ -8,197 +8,182 @@ The backend for the AI Stylist App provides a robust and scalable infrastructure
 
 ## Features
 
-- **AI Chat Interface**: Engage with an AI stylist for personalized outfit suggestions and fashion tips.
-- **Wardrobe Management**: Upload, categorize, and manage your clothing items to receive tailored recommendations.
-- **User Profile Management**: Store and update personal details to refine the AI's styling advice.
-- **Authentication and Authorization**: Secure user data with JWT-based authentication.
-- **Scalable Architecture**: Designed using microservices for efficient scaling and maintenance.
+- 🤖 ********AI Chat Interface********: Personalized outfit suggestions and fashion tips using OpenAI integration
+- 👕 ********Wardrobe Management********: Digital wardrobe organization with image upload and categorization
+- 👤 ********User Profile Management********: Detailed user preferences and measurements storage
+- 🔐 ********JWT Authentication********: Secure access with refresh token support
+- 📦 ********Microservices Architecture********: Scalable design with separate services
+- ☁️ ********Cloud Storage********: AWS S3 integration for image storage
+- 📊 ********Dual Database********: PostgreSQL for structured data, MongoDB for chat history
 
 ## Technology Stack
 
-- **Programming Language**: Python
-- **Framework**: FastAPI for building APIs
-- **Databases**:
-    - **Relational**: PostgreSQL for structured data
-    - **NoSQL**: MongoDB for flexible document storage
-- **AI Integration**:
-    - Natural Language Processing with integrated AI models
-    - Image Recognition using machine learning libraries
-- **Containerization**: Docker for consistent deployment
-- **Cloud Services**: Hosted on cloud platforms with container orchestration
+- ********Backend Framework********: FastAPI
+- ********Databases********:
+  - PostgreSQL (User data, Wardrobe items)
+  - MongoDB (Chat sessions, Messages)
+- ********Cloud Services********:
+  - AWS S3 (Image storage)
+  - OpenAI API (Chat intelligence)
+- ********Development Tools********:
+  - Docker & Docker Compose
+  - Alembic (Database migrations)
+  - GitHub Actions (CI/CD)
+
+## Prerequisites
+
+- Python 3.8+
+- Docker and Docker Compose
+- PostgreSQL
+- MongoDB
+- AWS Account (for S3)
+- OpenAI API Key
 
 ## Installation
 
-1. **Clone the Repository**:
+1. ********Clone the Repository********:
+```bash
+git clone https://github.com/yourusername/ai-stylist-backend.git
+cd ai-stylist-backend
+```
 
-     ```bash
-     git clone https://github.com/yourusername/ai-stylist-backend.git
-     cd ai-stylist-backend
-     ```
+2. ********Environment Setup********:
+   Create a `.env` file in the root directory with the following variables:
+```env
+# Database Configuration
+DATABASE_URL=postgresql://<username>:<password>@localhost:5432/ai_fashion_app
+POSTGRES_USER=<username>
+POSTGRES_PASSWORD=<password>
+POSTGRES_DB=ai_fashion_app
 
-2. **Create a Virtual Environment**:
+# MongoDB Configuration
+MONGODB_URL=mongodb://localhost:27017
+MONGODB_DB_NAME=ai_chat
+MONGODB_HOST=mongodb
 
-     ```bash
-     python3 -m venv venv
-     source venv/bin/activate
-     ```
+# JWT Configuration
+SECRET_KEY=<your-secret-key>
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=7
+REFRESH_SECRET_KEY=<your-refresh-secret-key>
 
-3. **Install Dependencies**:
+# AWS Configuration
+AWS_ACCESS_KEY_ID=<your-aws-access-key>
+AWS_SECRET_ACCESS_KEY=<your-aws-secret-key>
+AWS_REGION=us-east-1
+AWS_S3_BUCKET=aifashion-images
 
-     ```bash
-     pip install -r requirements.txt
-     ```
+# OpenAI Configuration
+OPENAI_API_KEY=<your-openai-api-key>
+OPENAI_MAX_TOKENS=8000
+```
 
-4. **Set Up Environment Variables**:
+3. ********Docker Deployment********:
+```bash
+_# Build and start services_
+docker compose up -d
 
-     - Create a `.env` file and add the necessary configurations (database credentials, secret keys, etc.).
-        ```env
-        DATABASE_URL=postgresql://<username>:<password>@localhost:5432/ai_fashion_app
-        SECRET_KEY=<generated-jwt-key>
-        ALGORITHM=HS256
-        ACCESS_TOKEN_EXPIRE_MINUTES=1000
+_# Check logs_
+docker compose logs -f
+```
 
-        # AWS S3 Configuration
-        AWS_ACCESS_KEY_ID=<your-aws-access-key-id>
-        AWS_SECRET_ACCESS_KEY=<your-aws-secret-access-key>
-        AWS_REGION=us-east-1
-        AWS_S3_BUCKET=aifashion-images
+4. ********Local Development Setup********:
+```bash
+_# Create virtual environment_
+python -m venv venv
+source venv/bin/activate  _# On Windows: venv\Scripts\activate_
 
-        # MongoDB Configuration
-        MONGODB_URL=mongodb://localhost:27017
-        MONGODB_DB_NAME=ai_chat
+_# Install dependencies_
+pip install -r requirements.txt
 
-        # OpenAI Configuration
-        OPENAI_API_KEY=<your-openai-api-key>
-        OPENAI_MODEL=gpt-4
-        OPENAI_MAX_TOKENS=8000
-        ```
+_# Run migrations_
+alembic upgrade head
 
-5. **Run Database Migrations**:
-
-     ```bash
-     alembic upgrade head
-     ```
-
-6. **Start the Application**:
-
-     ```bash
-     uvicorn app.main:app --reload
-     ```
-
-## Usage
-
-- Access the API documentation at `http://localhost:8000/docs` for interactive exploration.
-- Use API clients like Postman to test endpoints.
-- Integrate the backend with the frontend application to enable full functionality.
+_# Start the application_
+uvicorn app.main:app --reload
+```
 
 ## Project Structure
-
 ```
-├── app
-│   ├── auth
-│   ├── database
-│   ├── models
-│   ├── routers
-│   ├── schemas
-│   ├── services
-│   └── main.py
-├── tests
-├── migrations
-├── requirements.txt
+├── app/
+│   ├── auth/ # Authentication & authorization
+│   ├── database/ # Database connections & models
+│   ├── models/ # SQLAlchemy models
+│   ├── routers/ # API routes
+│   ├── schemas/ # Pydantic models
+│   ├── services/ # Business logic
+│   └── main.py # Application entry point
+├── migrations/         # Alembic migrations
+├── tests/             # Test files
+├── docs/              # Documentation
+├── .github/           # GitHub Actions workflows
+├── docker-compose.yml # Docker composition
+├── requirements.txt   # Python dependencies
 └── README.md
 ```
-## Usage
 
+## API Documentation
 
-1. [Users](#users)
-2. [Wardrobe](#wardrobe)
-3. [Chat](#chat)
+Access the interactive API documentation at:
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
 
----
+### Main Endpoints
 
-## Users
+#### Authentication
+- `POST /api/register` - Register new user
+- `POST /api/login` - User login
+- `POST /api/refresh` - Refresh access token
 
-Endpoints for user registration, authentication, and profile management.
+#### User Management
+- `GET /api/users/me` - Get current user profile
+- `PUT /api/users/me/profile` - Update user profile
+- `POST /api/users/me/profile-picture` - Upload profile picture
 
-- **POST** `/api/register`  
-  Register a new user account.
+#### Wardrobe
+- `GET /api/wardrobe/items` - List wardrobe items
+- `POST /api/wardrobe/items` - Add new item
+- `GET /api/wardrobe/items/{item_id}` - Get item details
+- `PUT /api/wardrobe/items/{item_id}` - Update item
+- `DELETE /api/wardrobe/items/{item_id}` - Delete item
+- `POST /api/wardrobe/items/{item_id}/image` - Upload item image
 
-- **POST** `/api/login`  
-  Authenticate a user and provide an access token.
+#### Chat
+- `POST /api/chat/sessions` - Create chat session
+- `GET /api/chat/sessions` - List chat sessions
+- `POST /api/chat/{session_id}/message` - Send message
+- `GET /api/chat/{session_id}` - Get chat history
 
-- **GET** `/api/users/me`  
-  Retrieve the authenticated user's information.
+## Development
 
-- **PUT** `/api/users/me/profile`  
-  Update the authenticated user's profile information.
+### Running Tests
+```bash
+pytest
+```
 
-- **POST** `/api/users/me/profile-picture`  
-  Upload or update the user's profile picture.
+### Database Migrations
+```bash
+_# Create a new migration_
+alembic revision --autogenerate -m "description"
 
-- **DELETE** `/api/users/me/profile-picture`  
-  Remove the user's profile picture.
+_# Apply migrations_
+alembic upgrade head
+```
 
----
+## Deployment
 
-## Wardrobe
+The application uses GitHub Actions for CI/CD. On push to main:
+1. Tests are run
+2. Docker images are built
+3. Application is deployed to production
 
-Endpoints for managing wardrobe items.
+## Contributing
 
-- **GET** `/api/wardrobe/items`  
-  Retrieve a list of wardrobe items.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-- **POST** `/api/wardrobe/items`  
-  Add a new item to the user's wardrobe.
-
-- **GET** `/api/wardrobe/items/{item_id}`  
-  Retrieve details of a specific wardrobe item.
-
-- **PUT** `/api/wardrobe/items/{item_id}`  
-  Update information of a specific wardrobe item.
-
-- **DELETE** `/api/wardrobe/items/{item_id}`  
-  Remove a specific item from the user's wardrobe.
-
-- **POST** `/api/wardrobe/items/{item_id}/image`  
-  Upload an image for a specific wardrobe item.
-
----
-
-## Chat
-
-Endpoints for managing AI chat sessions and messages.
-
-- **POST** `/api/chat/chat/sessions`  
-  Initiate a new chat session.
-
-- **GET** `/api/chat/chat/sessions`  
-  Retrieve a list of existing chat sessions.
-
-- **POST** `/api/chat/chat/{session_id}/message`  
-  Send a message in a specific chat session.
-
-- **GET** `/api/chat/chat/{session_id}`  
-  Retrieve the message history of a specific chat session.
-
-- **DELETE** `/api/chat/chat/{session_id}`  
-  Terminate and remove a specific chat session.
-
----
-
-## Additional Information
-
-- **Authentication**:  
-  All endpoints, except for `/api/register` and `/api/login`, require JWT-based authentication. Include the `Authorization: Bearer <access_token>` header in your requests.
-
-- **API Documentation**:  
-  Access the interactive API docs at [http://localhost:8000/docs](http://localhost:8000/docs).
-
-- **Error Handling**:  
-  The API uses standard HTTP status codes to indicate the success or failure of requests. Error responses include a `detail` field with more information.
-
-- **Data Formats**:  
-  All request and response bodies are in JSON format, except for endpoints that handle file uploads, which use `multipart/form-data`.
-
----
 
