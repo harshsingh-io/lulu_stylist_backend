@@ -2,6 +2,10 @@
 
 The backend for the AI Stylist App provides a robust and scalable infrastructure to deliver personalized fashion advice through an interactive AI chat interface. It allows users to manage their wardrobe digitally and enhances recommendations based on individual user details.
 
+[Front-End Of Lulu AI Fashion Stylist](https://github.com/harshsingh-io/lulu_stylist_app)
+
+[Docs](http://54.197.163.177:8000/docs)
+
 ## Features
 
 - **AI Chat Interface**: Engage with an AI stylist for personalized outfit suggestions and fashion tips.
