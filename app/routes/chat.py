@@ -42,8 +42,9 @@ async def create_chat_session(
         db, 
         current_user.id,
         context_options,
-        session_name
-    )
+        session_name,
+        
+
     return {"session_id": session_id}
 
 @router.post("/{session_id}/message")
@@ -114,4 +115,25 @@ async def delete_chat_session(
     success = await ChatCRUD.delete_chat_session(session_id)
     if not success:
         raise HTTPException(status_code=500, detail="Failed to delete chat session")
+
     return {"message": "Chat session deleted successfully"}
+
+@router.delete("/sessions/all")
+async def delete_all_chat_sessions(
+    current_user: UserModel = Depends(jwt_bearer)
+):
+    """Delete all chat sessions for the current user"""
+    try:
+        success = await ChatCRUD.delete_all_user_chat_sessions(current_user.id)
+        if not success:
+            raise HTTPException(
+                status_code=404, 
+                detail="No chat sessions found to delete"
+            )
+        return {"message": "All chat sessions deleted successfully"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error deleting chat sessions: {str(e)}"
+        )
+

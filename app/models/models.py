@@ -131,6 +131,6 @@ class ItemModel(Base):
 class TagModel(Base):
     __tablename__ = 'tags'
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String, unique=True, nullable=False)  # Unique tag names
+    name = Column(String, unique=True, nullable=False)
 
     items = relationship("ItemModel", secondary=item_tags, back_populates="tags")

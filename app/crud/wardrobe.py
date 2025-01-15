@@ -1,5 +1,7 @@
 #crud/wardrobe.py
 from sqlalchemy.orm import Session
+
+from app.enums.enums import CategoryEnum
 from ..models.models import ItemModel, TagModel
 from ..schemas.schemas import ItemCreateSchema
 from typing import List
@@ -11,6 +13,38 @@ logger = logging.getLogger(__name__)
 
 def get_item(db: Session, item_id: UUID):
     return db.query(ItemModel).filter(ItemModel.id == item_id).first()
+
+def get_user_items_by_category(
+    db: Session, 
+    user_id: UUID, 
+    category: CategoryEnum,
+    skip: int = 0, 
+    limit: int = 100
+) -> List[ItemModel]:
+    """
+    Retrieve user items filtered by category.
+    
+    Args:
+        db: Database session
+        user_id: ID of the user
+        category: Category to filter by
+        skip: Number of items to skip
+        limit: Maximum number of items to return
+        
+    Returns:
+        List of items matching the category
+    """
+    return (
+        db.query(ItemModel)
+        .filter(
+            ItemModel.user_id == user_id,
+            ItemModel.category == category,
+            ItemModel.is_deleted == False
+        )
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 def get_user_items(db: Session, user_id: int, skip: int = 0, limit: int = 100):
     return db.query(ItemModel).filter(ItemModel.user_id == user_id).offset(skip).limit(limit).all()

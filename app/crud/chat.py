@@ -182,10 +182,8 @@ class ChatCRUD:
             }
         )
         return result.modified_count > 0
-
-# app/crud/chat.py
-# Add these methods to your existing ChatCRUD class:
-
+      
+      
     @staticmethod
     async def get_chat_history(session_id: str) -> Optional[ChatSession]:
         """Get chat session by ID"""
@@ -194,8 +192,11 @@ class ChatCRUD:
         try:
             chat = await mongodb.chat_sessions.find_one({"_id": ObjectId(session_id)})
             if chat:
-                # Convert ObjectId to string
-                chat['_id'] = str(chat['_id'])
+
+                # Convert ObjectId to string and set as id
+                chat['id'] = str(chat['_id'])
+                del chat['_id']  # Remove the _id field since we've converted it
+
                 
                 # Convert stored messages to Message objects
                 if 'messages' in chat:
@@ -219,9 +220,11 @@ class ChatCRUD:
             sessions = []
             
             async for chat in cursor:
-                # Convert ObjectId to string
-                chat['_id'] = str(chat['_id'])
-                
+
+                # Convert ObjectId to string and set as id
+                chat['id'] = str(chat['_id'])
+                del chat['_id']  # Remove the _id field since we've converted it
+  
                 # Convert stored messages to Message objects
                 if 'messages' in chat:
                     chat['messages'] = [
@@ -263,4 +266,16 @@ class ChatCRUD:
             return result.modified_count > 0
         except Exception as e:
             print(f"Error clearing chat history: {e}")
+
+            return False
+        
+    @staticmethod
+    async def delete_all_user_chat_sessions(user_id: UUID) -> bool:
+        """Delete all chat sessions for a user"""
+        mongodb = MongoDB.get_db()
+        try:
+            result = await mongodb.chat_sessions.delete_many({"user_id": str(user_id)})
+            return result.deleted_count > 0
+        except Exception as e:
+            print(f"Error deleting all chat sessions: {e}")
             return False
