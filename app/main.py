@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from .database.base import Base, engine
 from .routes import user, wardrobe, upload, chat
 from .database.mongodb import MongoDB
+
 from loguru import logger
 import sys
 
@@ -18,7 +19,6 @@ logger.add(
     retention="10 days",
     level="DEBUG"
 )
-
 # Create database tables
 Base.metadata.create_all(bind=engine)
 

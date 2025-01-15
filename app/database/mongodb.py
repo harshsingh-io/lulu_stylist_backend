@@ -1,11 +1,13 @@
 # app/database/mongodb.py
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
+
 from dotenv import load_dotenv
 from ..config import get_settings
 
 load_dotenv()
 settings = get_settings()
+
 
 class MongoDB:
     client: AsyncIOMotorClient = None
@@ -22,6 +24,7 @@ class MongoDB:
             )
             await cls.client.admin.command('ping')
             print(f"Connected to MongoDB at {settings.MONGODB_HOST}!")
+
         except Exception as e:
             print(f"Error connecting to MongoDB: {e}")
             raise

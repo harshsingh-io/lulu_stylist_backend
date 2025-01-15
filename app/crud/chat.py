@@ -1,3 +1,4 @@
+
 from typing import List, Optional, Dict
 from datetime import datetime
 from bson import ObjectId
@@ -181,7 +182,8 @@ class ChatCRUD:
             }
         )
         return result.modified_count > 0
-
+      
+      
     @staticmethod
     async def get_chat_history(session_id: str) -> Optional[ChatSession]:
         """Get chat session by ID"""
@@ -190,9 +192,11 @@ class ChatCRUD:
         try:
             chat = await mongodb.chat_sessions.find_one({"_id": ObjectId(session_id)})
             if chat:
+
                 # Convert ObjectId to string and set as id
                 chat['id'] = str(chat['_id'])
                 del chat['_id']  # Remove the _id field since we've converted it
+
                 
                 # Convert stored messages to Message objects
                 if 'messages' in chat:
@@ -216,10 +220,11 @@ class ChatCRUD:
             sessions = []
             
             async for chat in cursor:
+
                 # Convert ObjectId to string and set as id
                 chat['id'] = str(chat['_id'])
                 del chat['_id']  # Remove the _id field since we've converted it
-                
+  
                 # Convert stored messages to Message objects
                 if 'messages' in chat:
                     chat['messages'] = [
@@ -261,6 +266,7 @@ class ChatCRUD:
             return result.modified_count > 0
         except Exception as e:
             print(f"Error clearing chat history: {e}")
+
             return False
         
     @staticmethod

@@ -1,3 +1,4 @@
+
 from typing import List, Optional, Dict
 from datetime import datetime
 from pydantic import BaseModel, Field
@@ -15,8 +16,10 @@ class ChatSession(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     session_name: Optional[str] = None
+
     user_context: Optional[Dict] = None
     
     class Config:
         from_attributes = True
         populate_by_name = True
+
