@@ -1,5 +1,7 @@
 # AI Stylist App Backend
 
+[![wakatime](https://wakatime.com/badge/user/018ecd32-5efb-491a-be09-136c9f428be6/project/713d784e-7e8e-4a1a-9c14-5b8ea0dcbb5f.svg)](https://wakatime.com/badge/user/018ecd32-5efb-491a-be09-136c9f428be6/project/713d784e-7e8e-4a1a-9c14-5b8ea0dcbb5f)
+
 A robust and scalable FastAPI backend for the AI Stylist App that provides personalized fashion advice through an AI chat interface, wardrobe management, and user profile customization.
 
 [Front-End Of Lulu AI Fashion Stylist](https://github.com/harshsingh-io/lulu_stylist_app)
